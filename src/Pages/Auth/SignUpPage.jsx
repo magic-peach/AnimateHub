@@ -74,6 +74,11 @@ const SignupPage = () => {
       return;
     }
 
+    if (!requirements.length || !requirements.special || !requirements.number || !requirements.caps) {
+      toast.error("Please meet all password requirements.");
+      return;
+    }
+
     if (username.length < 3) {
       toast.error("Username must be at least 3 characters long.");
       return;
@@ -288,7 +293,7 @@ const SignupPage = () => {
               whileTap={{ scale: 0.98 }}
               type="submit"
               className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 dark:from-accent-600 dark:to-accent-700 dark:hover:from-accent-700 dark:hover:to-accent-800 text-white px-6 py-4 rounded-xl text-lg font-bold shadow-lg shadow-primary-500/25 dark:shadow-accent-500/25 transition-all duration-300 relative overflow-hidden"
-              disabled={isAuthLoading}
+              disabled={isAuthLoading || !requirements.length || !requirements.special || !requirements.number || !requirements.caps}
             >
               {isAuthLoading ? (
                 <span className="flex items-center justify-center">
