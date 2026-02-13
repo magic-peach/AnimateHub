@@ -39,9 +39,12 @@ export const registerController = asyncHandler(async (req, res) => {
 
   let user = new User({ username, email, fullName, password });
 
-  const verificationToken = crypto.randomBytes(32).toString("hex");
-  user.emailVerificationToken = verificationToken;
-  user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  const otp = crypto.randomInt(100000, 999999).toString().padStart(6, '0');
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  user.emailVerificationOTP = otp;
+  user.emailVerificationOTPExpires = expiresAt;
+  user.isEmailVerified = false;
 
   await user.save();
   await sendVerificationEmail(user.email, verificationToken, user.fullName);

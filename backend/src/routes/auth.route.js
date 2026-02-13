@@ -1,11 +1,8 @@
 import { Router } from "express";
 import {
-    getCurrentUserController,
-    loginController,
-    logoutController,
-    registerController,
-    updatePasswordController
-} from "../controllers/auth.controller.js";
+    generateOTP,
+    verifyOTP
+} from "../controllers/user.controller";
 import {
     googleLoginController
 } from "../controllers/googleAuth.controller.js";   
@@ -31,6 +28,10 @@ router.post("/google-login", googleLoginController);
 // Email verification routes
 router.get("/verify-email/:token", verifyUserMailController)
 router.post("/resend-verification", authMiddleware, resendVerificationEmail)
+
+// OTP routes
+router.post("/generate-otp", authMiddleware, generateOTP);
+router.post("/verify-otp", authMiddleware, verifyOTP)
 
 // Password reset routes
 router.post("/forgot-password", forgotPassword)

@@ -18,6 +18,73 @@ const cookieOptions = {
 };
 
 /**
+ * Generate OTP for email verification
+ */
+export const generateOTP = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) throw new ApiError(400, "Email is required");
+
+    const otp = crypto.randomInt(100000, 999999).toString().padStart(6, '0');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await User.findOneAndUpdate(
+        { email },
+        {
+            $set: {
+                emailVerificationOTP: otp,
+                emailVerificationOTPExpires: expiresAt,
+                isEmailVerified: false
+            }
+        }
+    }
+    );
+
+    await sendVerificationEmail(email, otp, 'User');
+    return res
+        .status(200)
+        .json(
+                new ApiResponse(200, "OTP sent to your email. Please verify to complete registration.")
+            );
+});
+
+/**
+ * Verify OTP
+ */
+export const verifyOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+    if (!email || !otp) throw new ApiError(400, "Email and OTP are required");
+
+    const user = await User.findOne({ email });
+    if (!user) throw new ApiError(400, "User not found");
+
+    if (user.emailVerificationOTP !== otp) {
+        throw new ApiError(400, "Invalid or expired OTP");
+    }
+
+    if (user.emailVerificationOTPExpires < new Date()) {
+        throw new ApiError(400, "OTP has expired");
+    }
+
+    await User.findOneAndUpdate(
+        { email },
+        {
+            $set: {
+                emailVerificationOTP: undefined,
+                emailVerificationOTPExpires: undefined,
+                isEmailVerified: true
+            }
+        }
+    }
+    );
+
+    return res
+        .status(200)
+        .json(
+                new ApiResponse(200, "Email verified successfully. You can now log in.")
+            );
+});
+
+/**
  * ✅ Verify user's email using token
  */
 export const verifyUserMailController = asyncHandler(async (req, res) => {
